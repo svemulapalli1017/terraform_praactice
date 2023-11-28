@@ -13,10 +13,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.6.4
+          terraform_version: 1.6.4  # Update this to match your Terraform Cloud version
 
       - name: Terraform Init
         run: terraform init
@@ -24,3 +29,11 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      - name: Set Terraform Output Variables
+        id: terraform-output
+        run: |
+          echo "instance_id=$(terraform output -raw instance_id)" >> terraform_output.env
+          echo "instance_public_ip=$(terraform output -raw instance_public_ip)" >> terraform_output.env
+        env:
+          INSTANCE_ID: ${{ steps.terraform-output.outputs.instance_id }}
+          INSTANCE_PUBLIC_IP: ${{ steps.terraform-output.outputs.instance_public_ip }}
